@@ -122,9 +122,11 @@
                 }
             };
 
+            // Envoi vers Apps Script
             fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'text/plain', 
+                // SUPPRESSION DE 'mode: text/plain' QUI ETAIT UNE ERREUR
+                // On laisse le fetch par défaut pour éviter les erreurs CORS complexes
                 body: JSON.stringify(data)
             })
             .then(response => response.json())
