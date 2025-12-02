@@ -64,25 +64,24 @@
             </div>
 
             <button type="submit" id="submitBtn" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
-                Envoyer la demande
+                Envoyer et Ouvrir WhatsApp
             </button>
         </form>
 
         <!-- État de chargement -->
         <div id="loadingState" class="hidden flex-col items-center justify-center mt-4">
             <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-8 w-8 mb-2"></div>
-            <p class="text-sm text-gray-500">Transmission à l'équipe...</p>
+            <p class="text-sm text-gray-500">Enregistrement et ouverture de WhatsApp...</p>
         </div>
 
-        <!-- Message de succès -->
+        <!-- Message de succès (si WhatsApp ne s'ouvre pas) -->
         <div id="successMessage" class="hidden mt-6 text-center">
             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
                 <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             </div>
-            <h3 class="mt-2 text-lg font-medium text-gray-900">Demande reçue !</h3>
-            <p class="mt-1 text-sm text-gray-500">Dossier n° : <span id="ticketRef" class="font-bold text-orange-600"></span></p>
-            <p class="text-sm text-gray-500 mt-2">Un coordinateur va vous répondre sur WhatsApp.</p>
-            <button onclick="location.reload()" class="mt-4 text-orange-600 hover:text-orange-500 text-sm font-medium underline">Nouvelle demande</button>
+            <h3 class="mt-2 text-lg font-medium text-gray-900">Demande enregistrée !</h3>
+            <p class="mt-1 text-sm text-gray-500">Si WhatsApp ne s'est pas ouvert, <a id="manualLink" href="#" class="text-orange-600 font-bold underline">cliquez ici</a>.</p>
+            <button onclick="location.reload()" class="mt-4 text-gray-400 hover:text-gray-500 text-sm font-medium underline">Retour à l'accueil</button>
         </div>
 
         <!-- Message d'erreur -->
@@ -93,8 +92,12 @@
 
     <script>
         // --- CONFIGURATION ---
-        // URL MISE A JOUR
+        // 1. VOTRE URL DE SCRIPT GOOGLE
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIIWndXbLAIyE3AfSeWWZlapd49l7NDN9Z2kJ9CCQq6QkiRWfIgTVkRbI_ouX8B3yI_g/exec'; 
+        
+        // 2. VOTRE NUMERO DE SUPPORT (Où le client doit envoyer le message)
+        // Mettez le numéro au format international SANS le "+" (ex: 33612345678)
+        const SUPPORT_NUMBER = "33674275985"; 
 
         // Gestion du formulaire
         document.getElementById('ticketForm').addEventListener('submit', function(e) {
@@ -111,22 +114,20 @@
             loading.classList.remove('hidden');
             loading.classList.add('flex');
 
-            // Préparation des données
+            // Récupération des valeurs
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const issueType = document.getElementById('issueType').value;
+            const description = document.getElementById('description').value;
+
             const data = {
                 action: 'create_ticket',
-                data: {
-                    name: document.getElementById('name').value,
-                    phone: document.getElementById('phone').value,
-                    issueType: document.getElementById('issueType').value,
-                    description: document.getElementById('description').value
-                }
+                data: { name, phone, issueType, description }
             };
 
             // Envoi vers Apps Script
             fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
-                // SUPPRESSION DE 'mode: text/plain' QUI ETAIT UNE ERREUR
-                // On laisse le fetch par défaut pour éviter les erreurs CORS complexes
                 body: JSON.stringify(data)
             })
             .then(response => response.json())
@@ -135,9 +136,23 @@
                 loading.classList.remove('flex');
                 
                 if(result.status === 'success') {
+                    // Cacher le formulaire
                     form.classList.add('hidden');
-                    document.getElementById('ticketRef').textContent = result.ticketId;
                     success.classList.remove('hidden');
+
+                    // --- REDIRECTION WHATSAPP ---
+                    // On prépare le message
+                    const text = `Bonjour, je viens de créer le ticket ${result.ticketId}.\n\nNom : ${name}\nSujet : ${issueType}\nDétails : ${description}`;
+                    
+                    // On encode pour l'URL
+                    const encodedText = encodeURIComponent(text);
+                    const waLink = `https://wa.me/${SUPPORT_NUMBER}?text=${encodedText}`;
+
+                    // On met à jour le lien manuel au cas où le popup est bloqué
+                    document.getElementById('manualLink').href = waLink;
+
+                    // On tente d'ouvrir WhatsApp
+                    window.location.href = waLink;
                 } else {
                     btn.classList.remove('hidden');
                     error.classList.remove('hidden');
