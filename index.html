@@ -73,7 +73,9 @@
     <script>
         // CONFIGURATION
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIIWndXbLAIyE3AfSeWWZlapd49l7NDN9Z2kJ9CCQq6QkiRWfIgTVkRbI_ouX8B3yI_g/exec'; 
-        const SUPPORT_NUMBER = "41796882735"; 
+        
+        // --- NUMÉROS DE TÉLÉPHONE (Format sans le +) ---
+        const NUM_ADMIN = "41796882735";    // Tout arrive chez vous
 
         document.getElementById('ticketForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -108,20 +110,22 @@
                     form.classList.add('hidden');
                     success.classList.remove('hidden');
 
-                    // --- CONSTRUCTION DU MESSAGE WHATSAPP AVEC LIENS ---
+                    // --- CONSTRUCTION DU MESSAGE WHATSAPP ---
                     let text = `Bonjour, je viens de créer le ticket ${result.ticketId}.`;
                     text += `\n\nNom : ${name}`;
                     text += `\nSujet : ${issueType}`;
                     text += `\nDétails : ${description}`;
                     
-                    // Ajout des liens d'administration (cachés en bas du message)
                     text += `\n\n-----------------`;
                     text += `\n(Liens Admin - Ne pas modifier)`;
                     text += `\n🔗 Prise en compte : ${result.linkAck}`;
                     text += `\n✅ Clôturer : ${result.linkSolve}`;
                     
                     const encodedText = encodeURIComponent(text);
-                    const waLink = `https://wa.me/${SUPPORT_NUMBER}?text=${encodedText}`;
+
+                    // --- ROUTAGE UNIQUE ---
+                    // Redirection toujours vers l'admin
+                    const waLink = `https://wa.me/${NUM_ADMIN}?text=${encodedText}`;
 
                     document.getElementById('manualLink').href = waLink;
                     window.location.href = waLink;
