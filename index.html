@@ -4,25 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Support Déménagement</title>
-    
-    <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#EA580C">
     <link rel="apple-touch-icon" href="https://placehold.co/192x192/EA580C/white?text=Move">
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <style>
-        .loader {
-            border-top-color: #ea580c; /* Orange */
-            -webkit-animation: spinner 1.5s linear infinite;
-            animation: spinner 1.5s linear infinite;
-        }
-        @keyframes spinner {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        .loader { border-top-color: #ea580c; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-stone-100 text-stone-800 font-sans min-h-screen flex flex-col items-center justify-center p-4">
@@ -33,19 +21,15 @@
             <p class="text-gray-500 text-sm mt-1">Une question sur votre devis, vos cartons ou le jour J ?</p>
         </div>
 
-        <!-- Formulaire -->
         <form id="ticketForm" class="space-y-4">
-            
             <div>
                 <label class="block text-sm font-medium text-gray-700">Votre Nom</label>
                 <input type="text" id="name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border focus:ring-orange-500 focus:border-orange-500 bg-gray-50" placeholder="Jean Dupont">
             </div>
-
             <div>
                 <label class="block text-sm font-medium text-gray-700">Téléphone (WhatsApp)</label>
                 <input type="tel" id="phone" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border focus:ring-orange-500 focus:border-orange-500 bg-gray-50" placeholder="+33 6 12 34 56 78">
             </div>
-
             <div>
                 <label class="block text-sm font-medium text-gray-700">Sujet de la demande</label>
                 <select id="issueType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border bg-white focus:ring-orange-500 focus:border-orange-500">
@@ -57,50 +41,40 @@
                     <option value="Autre">Autre demande</option>
                 </select>
             </div>
-
             <div>
                 <label class="block text-sm font-medium text-gray-700">Détails</label>
                 <textarea id="description" rows="3" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border focus:ring-orange-500 focus:border-orange-500 bg-gray-50" placeholder="Ex: Il me manque 10 cartons livres..."></textarea>
             </div>
-
             <button type="submit" id="submitBtn" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
                 Envoyer et Ouvrir WhatsApp
             </button>
         </form>
 
-        <!-- État de chargement -->
         <div id="loadingState" class="hidden flex-col items-center justify-center mt-4">
             <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-8 w-8 mb-2"></div>
-            <p class="text-sm text-gray-500">Enregistrement et ouverture de WhatsApp...</p>
+            <p class="text-sm text-gray-500">Création du ticket...</p>
         </div>
 
-        <!-- Message de succès (si WhatsApp ne s'ouvre pas) -->
         <div id="successMessage" class="hidden mt-6 text-center">
             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
                 <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             </div>
-            <h3 class="mt-2 text-lg font-medium text-gray-900">Demande enregistrée !</h3>
-            <p class="mt-1 text-sm text-gray-500">Si WhatsApp ne s'est pas ouvert, <a id="manualLink" href="#" class="text-orange-600 font-bold underline">cliquez ici</a>.</p>
+            <h3 class="mt-2 text-lg font-medium text-gray-900">Ticket Créé !</h3>
+            <p class="mt-1 text-sm text-gray-500">Redirection vers WhatsApp...</p>
+            <p class="mt-2 text-xs text-gray-400">Si rien ne se passe, <a id="manualLink" href="#" class="text-orange-600 underline">cliquez ici</a>.</p>
             <button onclick="location.reload()" class="mt-4 text-gray-400 hover:text-gray-500 text-sm font-medium underline">Retour à l'accueil</button>
         </div>
-
-        <!-- Message d'erreur -->
+        
         <div id="errorMessage" class="hidden mt-6 bg-red-50 p-4 rounded-md border border-red-200">
-            <p class="text-sm text-red-700 text-center">Erreur de connexion. Vérifiez votre réseau et réessayez.</p>
+            <p class="text-sm text-red-700 text-center">Erreur de connexion.</p>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
-        // 1. VOTRE URL DE SCRIPT GOOGLE
+        // CONFIGURATION
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIIWndXbLAIyE3AfSeWWZlapd49l7NDN9Z2kJ9CCQq6QkiRWfIgTVkRbI_ouX8B3yI_g/exec'; 
-        
-        // 2. VOTRE NUMERO DE SUPPORT (Où le client doit envoyer le message)
-        // Mettez le numéro au format international SANS le "+" (ex: 33612345678)
-        // C'est vers ce numéro que le "Click-to-Chat" va rediriger le client.
         const SUPPORT_NUMBER = "41796882735"; 
 
-        // Gestion du formulaire
         document.getElementById('ticketForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -110,23 +84,17 @@
             const success = document.getElementById('successMessage');
             const error = document.getElementById('errorMessage');
 
-            // UI Loading
             btn.classList.add('hidden');
             loading.classList.remove('hidden');
             loading.classList.add('flex');
 
-            // Récupération des valeurs
             const name = document.getElementById('name').value;
             const phone = document.getElementById('phone').value;
             const issueType = document.getElementById('issueType').value;
             const description = document.getElementById('description').value;
 
-            const data = {
-                action: 'create_ticket',
-                data: { name, phone, issueType, description }
-            };
+            const data = { action: 'create_ticket', data: { name, phone, issueType, description } };
 
-            // Envoi vers Apps Script
             fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify(data)
@@ -137,22 +105,25 @@
                 loading.classList.remove('flex');
                 
                 if(result.status === 'success') {
-                    // Cacher le formulaire
                     form.classList.add('hidden');
                     success.classList.remove('hidden');
 
-                    // --- REDIRECTION WHATSAPP ---
-                    // On prépare le message
-                    const text = `Bonjour, je viens de créer le ticket ${result.ticketId}.\n\nNom : ${name}\nSujet : ${issueType}\nDétails : ${description}`;
+                    // --- CONSTRUCTION DU MESSAGE WHATSAPP AVEC LIENS ---
+                    let text = `Bonjour, je viens de créer le ticket ${result.ticketId}.`;
+                    text += `\n\nNom : ${name}`;
+                    text += `\nSujet : ${issueType}`;
+                    text += `\nDétails : ${description}`;
                     
-                    // On encode pour l'URL
+                    // Ajout des liens d'administration (cachés en bas du message)
+                    text += `\n\n-----------------`;
+                    text += `\n(Liens Admin - Ne pas modifier)`;
+                    text += `\n🔗 Prise en compte : ${result.linkAck}`;
+                    text += `\n✅ Clôturer : ${result.linkSolve}`;
+                    
                     const encodedText = encodeURIComponent(text);
                     const waLink = `https://wa.me/${SUPPORT_NUMBER}?text=${encodedText}`;
 
-                    // On met à jour le lien manuel au cas où le popup est bloqué
                     document.getElementById('manualLink').href = waLink;
-
-                    // On tente d'ouvrir WhatsApp
                     window.location.href = waLink;
                 } else {
                     btn.classList.remove('hidden');
@@ -160,7 +131,6 @@
                 }
             })
             .catch(err => {
-                console.error("Erreur Fetch:", err);
                 loading.classList.add('hidden');
                 loading.classList.remove('flex');
                 btn.classList.remove('hidden');
@@ -169,9 +139,7 @@
         });
 
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js');
-            });
+            window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
         }
     </script>
 </body>
